@@ -1,14 +1,13 @@
+import {useEffect} from 'react';
 import { Input, Form, Button, message} from 'antd';
 import { connect, Link} from 'umi';
 
 import styles from './index.less';
 
-const register = ({ users, addUser, history }) => {
-    let key = users.length;
-    key++;
+const register = ({ addUser, history}) => {
     const onFinish = (values: any) => { // 表单验证成功回调
-        const {username, email, password } = values; // 获取表单各项的值
-        addUser({key: key.toString(), username: username.replace(/\s+/g,""), email, password: password.replace(/\s+/g,"")}); // 添加用户, 去除用户和密码的空格
+        const { username, email, password } = values; // 获取表单各项的值
+        addUser({ username: username.replace(/\s+/g,""), email, password: password.replace(/\s+/g,"")}); // 添加用户, 去除用户和密码的空格
         message.success("注册成功，即将跳转登录页面", 2.5, () => {
             history.push("/login");
         })
@@ -79,6 +78,7 @@ const mapStateToProps = ({ users }) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
+    initUser: (_) => dispatch({ type: 'users/initUser', payload: _ }),
     addUser: (user) => dispatch({ type: 'users/addUser', payload: user }),  // 注册用户
 })
 

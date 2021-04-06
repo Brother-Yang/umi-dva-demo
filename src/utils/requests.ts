@@ -15,9 +15,9 @@ request.interceptors.request.use((url, options) => {
   });
   
 request.interceptors.response.use((response, options) => {
-    if(!options.headers["authorization"]){ // 如果没有token，则跳转到登录页
-        history.push("/login");
-    }
+    // if(!options.headers["authorization"]){ // 如果没有token，则跳转到登录页
+    //     history.push("/login");
+    // }
     return response
 });
 

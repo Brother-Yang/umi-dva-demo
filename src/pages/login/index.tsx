@@ -1,10 +1,15 @@
 import { Input, Button, Form, message} from 'antd';
 import { connect, Link } from 'umi';
-import { useState } from 'react';
+import { useState, useEffect} from 'react';
 
 import styles from './index.less';
 
-const login = ({ users, history }) => {
+const login = ({ users, history, initUser }) => {
+    
+    useEffect(() => {
+        initUser();
+    },[])
+
     const [username, setUsername] = useState(""); // 输入的用户名
     const [password, setPassword] = useState(""); // 输入的密码
     const goLogin = () => {
@@ -14,7 +19,6 @@ const login = ({ users, history }) => {
         isLogin ? message.success("登陆成功，即将跳转到主页", 2.5, () => { history.push('/main')}) // true 则登录成功
         : message.error("登陆失败，请检查账号和密码", 2); // false 登陆失败
     }
-
     return (
         <div className={styles["input-box"]}>
             <Form style={{width:"80%"}}>
@@ -46,5 +50,9 @@ const login = ({ users, history }) => {
 const mapStateToProps = ({ users }) =>({
     users: users.users
 })
+const mapDispatchToProps = (dispatch) => ({
+    initUser: (_) => dispatch({ type: 'users/initUser', payload: _ }),
+})
 
-export default connect(mapStateToProps)(login);
+
+export default connect(mapStateToProps, mapDispatchToProps)(login);

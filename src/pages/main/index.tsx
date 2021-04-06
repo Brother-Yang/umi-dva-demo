@@ -1,10 +1,14 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { connect } from 'umi';
 import { Table, Space, Modal, Input, message, Popconfirm} from 'antd';
 
 import styles from './index.less';
 
-const main = ({ users, delUser, updateUser }) => {
+const main = ({ users, delUser, updateUser, initUser }) => {
+
+    useEffect(() => {
+        initUser();
+    },[])
 
     const [isModalVisible, setIsModalVisible] = useState(false); // model框显示与隐藏
     const [newUsername, setNewUsername] = useState(""); // model框下的 username
@@ -13,17 +17,18 @@ const main = ({ users, delUser, updateUser }) => {
     const [key, setKey] = useState(""); // key值
 
     const showModel = (record) => { // 点击修改显示 model框
-        const { username, email, password, key} = record; // 解构获得点击的用户信息
+        const { username, email, password, Id} = record; // 解构获得点击的用户信息
         setIsModalVisible(true); // 显示 model 框
 
         setNewUsername(username);
         setNewMail(email)
         setNewPassword(password)
-        setKey(key);
+        setKey(Id);
     }
     
-    const handleOk = () => { // model 点击确认回调
-        updateUser({password: newPassword, key, email: newEmail, username: newUsername}); // 更新修改的用户信息
+    const handleOk = async () => { // model 点击确认回调
+        await updateUser({password: newPassword, Id: key, email: newEmail, username: newUsername}); // 更新修改的用户信息
+        await initUser();
         message.success("修改成功", 2)
         setIsModalVisible(false);
     };
@@ -32,8 +37,9 @@ const main = ({ users, delUser, updateUser }) => {
         setIsModalVisible(false);
     };
 
-    const confirm = (key) => { // 确认框点击是的回调
-        delUser(key)
+    const confirm = async (key) => { // 确认框点击是的回调
+        await delUser(key);
+        await initUser();
         message.success('删除成功');
       }
       
@@ -42,16 +48,16 @@ const main = ({ users, delUser, updateUser }) => {
       }
 
     const columns = [
-        {title: "用户名", dataIndex: "username", key: "username"},
-        {title: "邮箱", dataIndex: "email", key: "email"},
-        {title: "密码", dataIndex: "password", key: "password"},
+        {title: "用户名", dataIndex: "username"},
+        {title: "邮箱", dataIndex: "email"},
+        {title: "密码", dataIndex: "password"},
         {title: "操作", 
             render: (text, record) => (
                 <Space size="middle">
                     <a onClick={() => showModel(record)}>修改</a>
                     <Popconfirm 
                         title="是否删除所选内容？"
-                        onConfirm={ () => confirm(record.key)}
+                        onConfirm={ () => confirm(record.Id)}
                         onCancel={cancel}
                         okText="是"
                         cancelText="否"
@@ -64,7 +70,7 @@ const main = ({ users, delUser, updateUser }) => {
 
     return (
         <div>
-            <Table  columns={columns} dataSource={users}></Table>
+            <Table rowKey={record=>record.Id} columns={columns} dataSource={users}></Table>
             <Modal title="编辑" visible={isModalVisible} onOk={handleOk} onCancel={handleCancel}>
                 <Space direction="horizontal">
                     <Input value={newUsername} onChange={(e) => {setNewUsername(e.target.value)}}/>
@@ -80,7 +86,8 @@ const mapStateToProps = ({ users }) =>({
     users: users.users
 })
 const mapDispatchToProps = (dispatch) => ({
-    delUser: (key) => dispatch({ type: 'users/delUser', payload: key }),
+    initUser: (_) => dispatch({ type: 'users/initUser', payload: _ }),
+    delUser: (Id) => dispatch({ type: 'users/delUser', payload: Id }),
     updateUser: (user) => dispatch({ type: 'users/updateUser', payload: user }),
 })
 
